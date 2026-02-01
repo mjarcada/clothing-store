@@ -1,17 +1,24 @@
 from fastapi import FastAPI, HTTPException
-import os, psycopg
-from psycopg.rows import dict_row
+from app.conn import get_conn
+from app.products import get_products
+from app.orders import create_order
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 
 app = FastAPI()
 
-def get_conn():
-    return psycopg.connect(DATABASE_URL, autocommit=True, row_factory=psycopg.rows.dict_row)
-
+# GET /
 @app.get("/")
 def get_root():
     return { "msg": "Clothing Store v0.1" }
+
+# GET /products
+@app.get("/products")
+def get_products_endpoint():
+    return get_products()
+
+@app.post("/orders", status_code=201)
+def create_order_endpoint(data: dict):
+    return create_order(data)
 
 # GET /categories 
 @app.get("/categories")

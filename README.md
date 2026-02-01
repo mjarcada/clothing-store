@@ -1,4 +1,4 @@
-#  fastapi-clothing-store
+# clothing-store
 
 ### For local real-time development using docker-compose
 
