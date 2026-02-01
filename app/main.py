@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from app.conn import get_conn
 from app.products import get_products
+from app.orders import create_order
+
 
 app = FastAPI()
 
@@ -13,6 +15,10 @@ def get_root():
 @app.get("/products")
 def get_products_endpoint():
     return get_products()
+
+@app.post("/orders", status_code=201)
+def create_order_endpoint(data: dict):
+    return create_order(data)
 
 # GET /categories 
 @app.get("/categories")
