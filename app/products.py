@@ -2,6 +2,6 @@ from app.conn import get_conn
 
 def get_products():
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("SELECT products.name as product_name, categories.name as category_name, products.price, products.stock FROM products INNER JOIN categories ON products.category_id = categories.category_id ORDER BY products.name;")
+        cur.execute("SELECT p.name as product_name, c.name as category_name, p.price, p.stock FROM products p INNER JOIN categories c ON p.category_id = c.category_id ORDER BY p.name;")
 
         return cur.fetchall()# GET /products
