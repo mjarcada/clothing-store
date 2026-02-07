@@ -1,12 +1,13 @@
 from fastapi import HTTPException
+import os
 import bcrypt
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from pydantic import BaseModel, EmailStr,Field
 from app.conn import get_conn
 
-ALGORITHM = "HS256"
-SECRET_KEY = "super-secret-key"
+ALGORITHM = os.getenv("ALGORITHM") or "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY") or "super-secret-key"
 
 # Pydantic models for validation
 class UserRegister(BaseModel):
