@@ -7,7 +7,7 @@ from app.auth import UserLogin, UserRegister, login_user, register_user
 
 app = FastAPI()
 
-# ===== New endpoints for homework 5 =====
+# ----- New endpoints for homework 5 -----
 
 # GET /
 @app.get("/")
@@ -42,7 +42,7 @@ def get_top_products_stats(n: int = 10):
 def get_recent_sales_stats(n: int = 30):
     return stats_recent_sales(n)
 
-# ===== Authentication endpoints for OPTIONAL SECTION =====
+# ----- Authentication endpoints for OPTIONAL SECTION -----
 
 @app.post("/users")
 def register_new_user(user: UserRegister):
@@ -52,7 +52,7 @@ def register_new_user(user: UserRegister):
 def login(credentials: UserLogin):
   return login_user(credentials)
 
-# ===== The endpoints from original repo =====
+# ----- The endpoints from original repo -----
 
 # GET /categories 
 @app.get("/categories")

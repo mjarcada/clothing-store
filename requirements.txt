@@ -1,5 +1,5 @@
 fastapi[standard]
 pydantic
 psycopg
-passlib[bcrypt]
+bcrypt==3.1.7
 python-jose[cryptography]

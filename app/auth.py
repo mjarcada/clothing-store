@@ -1,31 +1,47 @@
 from fastapi import HTTPException
-from passlib.context import CryptContext
+import bcrypt
 from datetime import datetime, timedelta, timezone
 from jose import jwt
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,Field
 from app.conn import get_conn
 
 ALGORITHM = "HS256"
 SECRET_KEY = "super-secret-key"
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Pydantic models for validation
 class UserRegister(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    password: str
+    password: str = Field(..., max_length=72)
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
 # --- Security Helpers ---
+
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    """
+    Hashes a password using bcrypt directly.
+    Bcrypt has a 72-byte limit, which we handle via Pydantic validation.
+    """
+    # Convert string to bytes
+    pwd_bytes = password.encode('utf-8')
+    # Generate salt and hash
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    # Return as string for database storage
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """
+    Checks a plain text password against a stored hash.
+    """
+    return bcrypt.checkpw(
+        plain_password.encode('utf-8'),
+        hashed_password.encode('utf-8')
+    )
 
 def create_jwt(data: dict):
     payload = data.copy()
@@ -33,6 +49,9 @@ def create_jwt(data: dict):
     payload.update({"exp": expire})
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
   
+
+# --- User Management Functions ---
+
 def register_user(user: UserRegister):
     with get_conn() as conn, conn.cursor() as cur:
         # Check if email already exists
