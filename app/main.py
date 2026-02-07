@@ -3,6 +3,7 @@ from app.conn import get_conn
 from app.products import get_products
 from app.orders import create_order
 from app.statistics import stats_customer_orders, stats_product_orders, stats_recent_sales, stats_top_products
+from app.auth import UserLogin, UserRegister, login_user, register_user
 
 app = FastAPI()
 
@@ -41,7 +42,15 @@ def get_top_products_stats(n: int = 10):
 def get_recent_sales_stats(n: int = 30):
     return stats_recent_sales(n)
 
+# ===== Authentication endpoints for OPTIONAL SECTION =====
 
+@app.post("/users")
+def post_register_user(user: UserRegister):
+    return register_user(user)
+
+@app.post("/users/login")
+def login(credentials: UserLogin):
+  return login_user(credentials)
 
 # ===== The endpoints from original repo =====
 

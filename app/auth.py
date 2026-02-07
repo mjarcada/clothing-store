@@ -1,11 +1,9 @@
-from app.conn import get_conn
-from fastapi import FastAPI, HTTPException, Depends
-import psycopg
-from psycopg.rows import dict_row
+from fastapi import HTTPException
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from pydantic import BaseModel, EmailStr
+from app.conn import get_conn
 
 ALGORITHM = "HS256"
 SECRET_KEY = "super-secret-key"
@@ -56,7 +54,7 @@ def register_user(user: UserRegister):
         return {"user_id": user_id, "email": user.email}
       
 def login_user(credentials: UserLogin):
-    with get_conn() as conn, conn.cursor(row_factory=dict_row) as cur:
+    with get_conn() as conn, conn.cursor() as cur:
         cur.execute("SELECT customer_id, password, role FROM customers WHERE email = %s;", (credentials.email,))
         user = cur.fetchone()
         if not user or not verify_password(credentials.password, user["password"]):
