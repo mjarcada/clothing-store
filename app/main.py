@@ -16,12 +16,12 @@ def get_root():
 
 # GET /products
 @app.get("/products")
-def get_products_endpoint():
+def get_products_list():
     return get_products()
 
 # POST /orders
 @app.post("/orders", status_code=201)
-def create_order_endpoint(data: dict):
+def create_new_order(data: dict):
     return create_order(data)
 
 # GET /stats/customers
@@ -45,7 +45,7 @@ def get_recent_sales_stats(n: int = 30):
 # ===== Authentication endpoints for OPTIONAL SECTION =====
 
 @app.post("/users")
-def post_register_user(user: UserRegister):
+def register_new_user(user: UserRegister):
     return register_user(user)
 
 @app.post("/users/login")
