@@ -2,14 +2,11 @@ from fastapi import HTTPException
 from app.conn import get_conn
 from app.products import get_products
 
-def create_order(data: dict):
+def create_order(data: dict, current_user: dict):
     """
-    takes a JSON body with customer_id and items
-    returns a JSON object with the order information and order items including
-    product name, price and total price
-    products.stock is decreased with the ordered quantity
+    Takes items from JSON, but uses current_user['id'] for security.
     """
-    customer_id = data.get("customer_id")
+    customer_id = current_user.get("id")
     items = data.get("items")  # [{"product_id": int, "quantity": int}]
 
     if not customer_id or not items:
