@@ -6,6 +6,8 @@ from app.statistics import stats_customer_orders, stats_product_orders, stats_re
 
 app = FastAPI()
 
+# ===== New endpoints for homework 5 =====
+
 # GET /
 @app.get("/")
 def get_root():
@@ -40,7 +42,9 @@ def get_recent_sales_stats(n: int = 30):
     return stats_recent_sales(n)
 
 
-# ===== Original endpoints from original repo =====
+
+# ===== The endpoints from original repo =====
+
 # GET /categories 
 @app.get("/categories")
 def get_categories():
