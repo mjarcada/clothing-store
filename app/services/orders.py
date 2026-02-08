@@ -1,12 +1,11 @@
 from fastapi import HTTPException
 from app.conn import get_conn
-from app.products import get_products
 
 def create_order(data: dict, current_user: dict):
     """
-    Takes items from JSON, but uses current_user['id'] for security.
+    Takes items as JSON, and uses current_user['user_id'] for security.
     """
-    customer_id = current_user.get("id")
+    customer_id = current_user.get("user_id")
     items = data.get("items")  # [{"product_id": int, "quantity": int}]
 
     if not customer_id or not items:
@@ -100,3 +99,70 @@ def create_order(data: dict, current_user: dict):
             "order_total": order_total
         }
 
+def get_user_orders(current_user: dict):
+    customer_id = current_user.get("user_id")
+    
+    with get_conn() as conn, conn.cursor() as cur:
+        # We join orders and order_items to give a detailed history
+        cur.execute("""
+            SELECT 
+                o.order_id, 
+                o.order_date,
+                SUM(oi.quantity * oi.price) as total_price,
+                COUNT(oi.product_id) as unique_items
+            FROM orders o
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.customer_id = %s
+            GROUP BY o.order_id, o.order_date
+            ORDER BY o.order_date DESC;
+        """, (customer_id,))
+        
+        return cur.fetchall()
+  
+
+def get_full_user_orders(current_user: dict):
+    # Note: Ensure key matches your JWT payload (you used "id" in previous steps)
+    customer_id = current_user.get("id") or current_user.get("user_id")
+    
+    with get_conn() as conn, conn.cursor() as cur:
+        # 1. Fetch all orders for this customer
+        cur.execute("""
+            SELECT order_id, order_date 
+            FROM orders 
+            WHERE customer_id = %s 
+            ORDER BY order_date DESC;
+        """, (customer_id,))
+        orders = cur.fetchall()
+
+        if not orders:
+            return []
+
+        # 2. Get all order IDs to fetch items in one go
+        order_ids = [o["order_id"] for o in orders]
+
+        # 3. Fetch all items for these orders, joining with products to get names
+        cur.execute("""
+            SELECT 
+                oi.order_id, 
+                oi.product_id, 
+                p.name as product_name, 
+                oi.quantity, 
+                oi.price as unit_price,
+                (oi.quantity * oi.price) as line_total
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.product_id
+            WHERE oi.order_id = ANY(%s);
+        """, (order_ids,))
+        all_items = cur.fetchall()
+
+        # 4. Group items into their respective orders
+        for order in orders:
+            # Filter items belonging to this specific order
+            order["items"] = [
+                item for item in all_items 
+                if item["order_id"] == order["order_id"]
+            ]
+            # Calculate total for the order
+            order["total_price"] = sum(item["line_total"] for item in order["items"])
+
+        return orders

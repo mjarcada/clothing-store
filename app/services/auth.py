@@ -10,7 +10,7 @@ from app.conn import get_conn
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
 ALGORITHM = os.getenv("ALGORITHM") or "HS256"
-SECRET_KEY = os.getenv("SECRET_KEY") or "super-secret-key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # Pydantic models for validation
 class UserRegister(BaseModel):
@@ -112,3 +112,7 @@ def login_user(credentials: UserLogin):
         
         return {"access_token": token, "token_type": "bearer"}  
       
+def delete_user(user_id: int):
+  with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM customers WHERE customer_id = %s", (user_id,))
+        return {"msg": "User deleted"}
