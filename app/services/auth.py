@@ -112,7 +112,22 @@ def login_user(credentials: UserLogin):
         
         return {"access_token": token, "token_type": "bearer"}  
       
-def delete_user(user_id: int):
+def delete_user_0(user_id: int):
   with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM customers WHERE customer_id = %s", (user_id,))
+        return {"msg": "User deleted"}
+
+def delete_user(user_id: int):
+    with get_conn() as conn, conn.cursor() as cur:
+        # Delete order items first (because they point to orders)
+        cur.execute("""
+            DELETE FROM order_items 
+            WHERE order_id IN (SELECT order_id FROM orders WHERE customer_id = %s)
+        """, (user_id,))
+        
+        # Delete the orders
+        cur.execute("DELETE FROM orders WHERE customer_id = %s", (user_id,))
+        
+        # Delete the customer
         cur.execute("DELETE FROM customers WHERE customer_id = %s", (user_id,))
         return {"msg": "User deleted"}

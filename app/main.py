@@ -12,7 +12,7 @@ app = FastAPI()
 
 @app.get("/")
 def get_root():
-    return { "msg": "Clothing Store v1.0" }
+    return { "msg": "Clothing Store v0.1" }
 
 @app.post("/users/login")
 def login(credentials: auth_service.UserLogin):
